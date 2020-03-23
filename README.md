@@ -6,7 +6,7 @@ version 1.0
 ## ImageJ macro
 
 Script to find, filter, and store individual microtubule images with a molecular motor 
-profile. Use the provide "Sample.tif" for example data.
+profile from a scanned sample. Use the provide "Sample.tif" for example data.
 
 This script requires the plugin "Ridge Detection": https://imagej.net/Ridge_Detection.  
 
