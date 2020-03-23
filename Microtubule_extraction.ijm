@@ -1,22 +1,25 @@
 /*-----------------------------------------------------------------------------
-Script to find and store individual microtubule images with molecular motor 
+Script to find, filter, and store individual microtubule images with a molecular motor 
 profile.
 
 This script requires the plugin "Ridge Detection": 
 (https://imagej.net/Ridge_Detection)  
 
-Maurits Kok 2019
+
+INPUT: 	- dual channel .tif stack (suitable for sample scan, not time-dependent data)
+OUTPUT: - .tif stacks with separate microtubule and molecular motor signal 
+		- list of all identified microtubules
+		- RoiSet.zip contains coordinates
+		- Optional: .tif stack with overlapping microtubules (debug mode)
+
+Maurits Kok 2020
 version 1.0
 
------------------------------------------------------------------------------
- ToDo list
- - Enable single and multiple channel stacks to be analysed
- 
 -----------------------------------------------------------------------------
  USER INSTRUCTIONS AND SETTINGS
 1) Load a dual channel image with:
 	#1) Microtubule channel
-	#2) Dynein channel
+	#2) Molecular motor channel
 */
 
 // 2) Set the width and max length of the microtubule exported view (in pixels)
@@ -26,23 +29,23 @@ ExportLength = 200;
 // 3) Microtubule length to be taken as straight
 L_thres = 20;
 
-// 4) Microtubule length restrictions
+// 4) Minimum microtubule length restriction
 L_min = 6;
 
-// 5) Set width of the excluded border of the FOV
+// 5) Set width of the excluded outer border of the FOV
 border = 15;
 
 // 6) Set microtubule elongation length (in pixels)
 dz = 12;
 
-// 7) Set the exclusion boundary to evaluate overlapping microtubules
+// 7) Set the exclusion boundary used to evaluate overlapping microtubules
 Boundary = 12;
 
 // 8) Number of points at the microtubule end to be ignored (these are often poorly fitted)
 skip = 3;
 
 // 9) Debugging on/off
-Debug = 0;
+Debug = 1;
 
 //-----------------------------------------------------------------------------
 
@@ -69,12 +72,13 @@ File.makeDirectory(SaveDir_Tif);
 //	File.makeDirectory(SaveDir_XY);
 //}
 
-// Create duplicate stack of the microtubule channel that is 8-bit
+// Create duplicate stack of the microtubule channel that is 8-bit (only required for tracking with Ridge Detection plugin).
 run("Duplicate...", "title=MTs_8bit duplicate channels=1");
 run("8-bit");
 run("Grays");
 
-// Run "Ridge Detection" plugin to locate the seed positions
+// Run "Ridge Detection" plugin to locate the seed positions.
+// Ridge Detection provides a GUI to adjust settings. Best practise is to use preview function to evaluate tracking performance.
 setLineWidth(1);
 run("Ridge Detection");
 
@@ -86,7 +90,7 @@ selectWindow("MTs_8bit");
 close();
 selectWindow(FileName);
 	
-// Split channel into "C1-Name" and "C2-Name"
+// Split channel into "C1-FileName" and "C2-FileName"
 run("Split Channels");
 CH1 = "C1-" + FileName;
 CH2 = "C2-" + FileName;
@@ -107,17 +111,17 @@ if (del.length > 0){
 	roiManager("delete");	
 }
 
-// Find the indeces of all overlapping microtubules (for function, see below)
+// Find the indices of all overlapping microtubules (for function, see below)
 // If Debug = 1, then a stack of all overlapping microtubules will be generated
 overlap = seedOverlap(slices, Boundary, Debug);
 
-// Save binary file with overlaps if applicable
+// Optional: Save binary file with overlaps if applicable
 if(findImage("Overlaps.tif")){
 	saveAs("Tiff", SaveDir + "/Overlaps.tif");
 //	close();
 }
 
-// Array for all ignord microtubule traces
+// Initialize array for all ignored microtubule traces
 removed = newArray(0);
 
 // Loop over all traced microtubules
@@ -158,10 +162,10 @@ for (i=0; i < roiManager("count"); i++) {
 		ignore = 1;
 	}
 	
-	// Skip the following:
+	// Microtubule selection criteria: 
 	// - microtubule too close to the border 
 	// - microtubule too short
-	// - microtubule that overlap [NOTE, this operation (currently) does not use the elongated microtubule coordinates]
+	// - microtubule that overlap [NOTE, this operation does not use the elongated microtubule coordinates]
 	
 	if(x_min>border && x_max<width-border && y_min>border && y_max<height-border && x.length> L_min && ignore == 0){
 
@@ -176,11 +180,11 @@ for (i=0; i < roiManager("count"); i++) {
 			x_temp = selectionArray(skip, x.length-skip-1, x);
 			y_temp = selectionArray(skip, y.length-skip-1, y);
 
-			// Find line extensions
+			// Find line extensions end_1
 			x_1 = extendLine(dz, x_temp, y_temp, End_1, 1);
 			y_1 = extendLine(dz, x_temp, y_temp, End_1, 2);		
 
-			// Find line extensions
+			// Find line extensions end_2
 			x_2 = extendLine(dz, x_temp, y_temp, End_2, 1);
 			y_2 = extendLine(dz, x_temp, y_temp, End_2, 2);
 			x_2 = Array.reverse(x_2); y_2 = Array.reverse(y_2);
@@ -199,7 +203,7 @@ for (i=0; i < roiManager("count"); i++) {
 			roiManager("update");
 			
 		// If the microtubule is long and therefore possibly not straight, 
-		// only the end structures will be used for fitting
+		// only the end coordinates will be used for fitting
 		} else if (x.length > 2*L_thres) {
 
 			// Split the trace into two separate traces for fitting
@@ -291,13 +295,6 @@ if (findImage("Profiles_1.tif")==1) {
 // After processing, merge the orginal files to obtain the initial setup
 run("Merge Channels...", "c1="+CH1+" c2="+CH2+" create");
 
-// Print all ignored microtubule traces from the ROI manager
-if (Debug == 1) {
-	for (j=0; j<removed.length; j++) {
-		print(removed[j]);
-	}
-}
-
 // Remove all ignored microtubule traces from the ROI manager
 if (lengthOf(removed) > 0) {
 	roiManager("select", removed);
@@ -342,6 +339,13 @@ run("Close");
 roiManager("Deselect");
 roiManager("Save", SaveDir + "RoiSet.zip");
 
+// Save Overlap stack if present
+if (findImage("Overlaps")==1) {
+	selectWindow("Overlaps");
+	SaveName_Tif = SaveDir_Tif + "Overlaps";
+	saveAs("Tiff", SaveName_Tif+".tif");
+	close();
+}
 
 ///////////////  Set of additional functions  /////////////// 
 
