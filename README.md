@@ -1,6 +1,6 @@
 # Microtubule-Extraction
  
-Maurits Kok 2020  
+Maurits Kok, 2020  
 version 1.0
 
 ## ImageJ macro
