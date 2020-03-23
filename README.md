@@ -8,7 +8,7 @@ version 1.0
 Script to find, filter, and store individual microtubule images with a molecular motor 
 profile. Use the provide "Sample.tif" for example data.
 
-This script requires the plugin "Ridge Detection": https://imagej.net/Ridge_Detection  
+This script requires the plugin "Ridge Detection": https://imagej.net/Ridge_Detection.  
 
 INPUT:
 * dual channel .tif stack (suitable for surface scan data, not time-dependent data)
