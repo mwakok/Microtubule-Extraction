@@ -3,7 +3,7 @@
 Maurits Kok 2020
 version 1.0
 
-## Script
+## ImageJ macro
 
 Script to find, filter, and store individual microtubule images with a molecular motor 
 profile. Use the provide "Demo_stack.tif" for example data.
