@@ -10,10 +10,10 @@ profile. Use the provide "Sample.tif" for example data.
 
 This script requires the plugin "Ridge Detection": https://imagej.net/Ridge_Detection  
 
-INPUT: 	
+INPUT:
 * dual channel .tif stack (suitable for surface scan data, not time-dependent data)
 
-OUTPUT: 
+OUTPUT:
 * .tif stacks with separate microtubule and molecular motor signal   
 * list of all identified microtubules  
 * RoiSet.zip contains coordinates  
