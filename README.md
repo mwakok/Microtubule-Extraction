@@ -19,4 +19,4 @@ OUTPUT: - .tif stacks with separate microtubule and molecular motor signal
 ## Sample data
 Data of dual channel dataset containing microtubules and dynein profiles (32-bit). 
 The data was gathered using TIRF microscopy and by scanning the sample. 
-The resulting trafffic jams are at steady-state. 
+The resulting traffic jams are at steady-state. 
