@@ -11,7 +11,7 @@ profile from a scanned image stack. Use the provided "Sample.tif" for example da
 This script requires the plugin "Ridge Detection": https://imagej.net/Ridge_Detection.  
 
 INPUT:
-* dual channel .tif stack (suitable for surface scan data, not time-dependent data)
+* dual channel .tif stack (surface scan data, not time-dependent data)
 
 OUTPUT:
 * .tif stacks with separate microtubule and molecular motor signal   
