@@ -21,5 +21,5 @@ OUTPUT:
 
 ## Sample data
 Data of dual channel dataset containing microtubules and dynein profiles (32-bit). 
-The data was gathered using TIRF microscopy and by scanning the sample. 
+The data was obtained with TIRF microscopy and by scanning the sample. 
 The resulting traffic jams are at steady-state. 
